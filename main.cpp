@@ -3,6 +3,7 @@
 #include "system.h"
 #include "OSCAR.h"
 #include "particle.h"
+#include "scattering.h"
 #include "arsenal.h"
 #include <cmath>
 #include <vector>
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
 
   // Time loop
   //========================================================
-   for(int imin=0; imin<300; imin+=100){
+/*   for(int imin=0; imin<300; imin+=100){
     oscar->populateOSCAR(&paraRdr,imin,imin+100);
     cell_array = oscar->getHydro();
     for(int itime=imin; itime<(imin+100); itime+=1){
@@ -77,11 +78,14 @@ int main(int argc, char *argv[])
       //oscar->populate2D(itime,ithermal); 
       //oscar->print2D(path);  
     }
-    }
+    }*/
   //=======================================================
+  scattering* dynamics = new scattering(&paraRdr);
+  dynamics->printGamma("Gamma_gg2gg.dat");
 
   // Delete the hydro array
   delete oscar;
+  delete dynamics;
   return 1;
 }
 /*

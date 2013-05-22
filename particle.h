@@ -12,7 +12,7 @@ class particle : public system
 {
  private:
   ParameterReader* paraRdr;
-
+  double alphas, gs;
  public:
   pdata* hquark;
   particle(ParameterReader* _paraRdr, pdata* _pdata);
