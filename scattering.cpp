@@ -5,6 +5,7 @@
 #include <cmath>
 #include "scattering.h"
 
+
 scattering::scattering(ParameterReader* _paraRdr)
 {
    paraRdr = _paraRdr;
@@ -16,43 +17,6 @@ scattering::scattering(ParameterReader* _paraRdr)
 
 scattering::~scattering()
 {
-}
-
-double scattering::sampleDiffXS(double s, double temp, int i, int j, int k, int l)
-{
-  double mreg = sm*gs*temp;
-  double tmin = -s+(mreg*mreg);
-  double tmax = -mreg*mreg;
-  double IM2min = 0.0;
-  double IM2max = (M2_ij2kl_integrated(s,tmax,i,j,k,l)-M2_ij2kl_integrated(s,tmin,i,j,k,l));
-  double IM2rand = drand48()*IM2max;
-  // find t for given sigma value
-  double IM2targ = (M2_ij2kl_integrated(s,tmin,i,j,k,l)+IM2rand);
-  double t = invertDiffXS(s,temp,i,j,k,l,IM2targ);
-  return acos(2.0*t/s+1.0);
-}
-
-double scattering::invertDiffXS(double s, double temp, int i, int j, int k, int l, double IM2targ)
-{
-  double mreg = sm*gs*temp;
-  double tmin = -s+(mreg*mreg);
-  double tmax = -mreg*mreg;
-  double dist = (M2_ij2kl_integrated(s,tmax,i,j,k,l)-M2_ij2kl_integrated(s,tmin,i,j,k,l));
-  double precision = 0.00001;
-  double trand = tmin+drand48()*(tmax-tmin);
-  double tlb = tmin, tub = tmax;
-  do{
-    dist = M2_ij2kl_integrated(s,trand,i,j,k,l)-IM2targ;
-    if(dist<0.0){
-      tlb = trand;
-      trand = trand+drand48()*(tub-trand);
-    }
-    else{
-      tub = trand;
-      trand = tlb+drand48()*(trand-tlb);
-    }
-  }while(abs(dist) > precision); 
-  return trand;
 }
 
 double scattering::Gamma_i(double E1, double temp, int i)
@@ -125,7 +89,80 @@ double scattering::Sigma_ij2kl(double E1, double E2, double m, int i, int j, int
   }
 }
 
-double scattering::M2_ij2kl_integrated(double s, double t, int i, int j, int k, int l)
+vector<int> scattering::sample2to2Processes(double s, double temp, int i)
+{
+  vector<int> channel;
+  vector<double> partitions;
+  double rand = drand48();
+  int index = 0;
+  partitions.push_back(0.0);
+  double segment_length = 0.0;
+  for(int j=-3; j<=3; j++){
+    for(int k=-3; k<=3; k++){
+      for(int l=-3; l<=3; l++){
+	double channel_rate = Gamma_ij2kl(s,temp,i,j,k,l);
+	double total_rate = Gamma_i(s,temp,i);
+	double prob = channel_rate/total_rate;
+	if(prob>0.0){
+	  segment_length += prob;
+	  partitions.push_back(segment_length);
+	  if(partitions[index] < rand && rand < partitions[index+1]){
+	    channel.push_back(i);
+	    channel.push_back(j);
+	    channel.push_back(k);
+	    channel.push_back(l);
+	    return channel;
+	  }
+          index++;
+	}
+      }
+    }
+  }	
+  cout << ">>error in decay channel sampling<<" << endl;
+}
+
+double scattering::sampleTheta(double s, double temp, int i, int j, int k, int l)
+{
+  double mreg = sm*gs*temp;
+  double tmin = -s+(mreg*mreg);
+  double tmax = -mreg*mreg;
+  double dIM2 = (IM2_ij2kl(s,tmax,i,j,k,l)-IM2_ij2kl(s,tmin,i,j,k,l));
+  double dIM20 = drand48()*dIM2;
+  double IM20 = (IM2_ij2kl(s,tmin,i,j,k,l)+dIM20);
+  double t = invert_IM2_ij2kl(s,temp,i,j,k,l,IM20); 
+  double theta = acos(2.0*t/s+1.0);
+  return theta;
+}
+
+double scattering::samplePhi()
+{
+  double phi = drand48()*2.0*M_PI;
+  return phi;
+}
+
+double scattering::invert_IM2_ij2kl(double s, double temp, int i, int j, int k, int l, double IM2)
+{
+  double mreg = sm*gs*temp;
+  double tmin = -s+(mreg*mreg);
+  double tmax = -mreg*mreg;
+  double dist = (IM2_ij2kl(s,tmax,i,j,k,l)-IM2_ij2kl(s,tmin,i,j,k,l));
+  double precision = 0.00001;
+  double t = tmin+drand48()*(tmax-tmin);
+  do{
+    dist = IM2_ij2kl(s,t,i,j,k,l)-IM2;
+    if(dist<0.0){
+      tmin = t;
+      t = t+drand48()*(tmax-t);
+    }
+    else{
+      tmax = t;
+      t = tmin+drand48()*(t-tmin);
+    }
+  }while(abs(dist) > precision); 
+  return t;
+}
+
+double scattering::IM2_ij2kl(double s, double t, int i, int j, int k, int l)
 {
   // {g g -> g g} 
   if(i==0 && j==0 && k==0 && l==0){ 
@@ -205,11 +242,6 @@ double scattering::M2_ij2kl(double s, double t, double u, int i, int j, int k, i
   }
 }
 
-double scattering::F(double E2, double temp)
-{
-  return gq*pow(exp(E2/temp)+1,-1.0);
-}
-
 double scattering::A10(double E1, double E2, double m)
 {
   return 4.0*E1*E2-2.0*pow(m,2.0)*log(2.0*E1*E2/pow(m,2.0))-2.0*pow(m,2.0);
@@ -253,6 +285,11 @@ double scattering::A17(double E1, double E2, double m)
 double scattering::A18(double E1, double E2, double m)
 {
   return -(4.0*E1*E2-pow(m,2.0))*log(4.0*E1*E2/pow(m,2.0)-1.0)+10.0*E1*E2-3.0*pow(m,2.0)*log(2.0*E1*E2/pow(m,2.0))-5.0*pow(m,2.0);
+}
+
+double scattering::F(double E2, double temp)
+{
+  return gq*pow(exp(E2/temp)+1,-1.0);
 }
 
 void scattering::printGamma(char filename[])

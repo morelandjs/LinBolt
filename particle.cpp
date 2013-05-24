@@ -3,7 +3,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
-#include "arsenal.h"
 #include "particle.h"
 
 particle::particle(ParameterReader* _paraRdr, pdata* _pdata)

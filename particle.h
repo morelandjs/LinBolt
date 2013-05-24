@@ -2,6 +2,7 @@
 #define PARTICLE_H
 
 #include "system.h"
+#include "arsenal.h"
 #include "ParameterReader.h"
 #include "pdata.h"
 #include <vector>

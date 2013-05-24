@@ -82,11 +82,25 @@ int main(int argc, char *argv[])
   //=======================================================
   scattering* dynamics = new scattering(&paraRdr);
   //dynamics->printGamma("Gamma_gg2gg.dat");
-  for(int i=0; i<1000; i++){
-    cout << dynamics->sampleDiffXS(5.0,0.4,0,0,0,0)/(2.0*M_PI)*360.0 << ", ";
-    //cout << endl;
-    //cout << endl;
+
+
+  int i = 1;
+  for(int j=-3; j<=3; j++){
+    for(int k=-3; k<=3; k++){
+      for(int l=-3; l<=3; l++){
+	double event_rate = dynamics->Gamma_ij2kl(5.0,0.5,i,j,k,l);
+	double total_rate = dynamics->Gamma_i(5.0,0.5,i);
+	double probability = event_rate/total_rate;
+
+	if(probability > 0.001){ 
+	  cout << i << j << " -> " << k << l << ":  " << probability << endl;
+	}
+      }
+    }
   }
+  
+
+
   // Delete the hydro array
   delete oscar;
   delete dynamics;

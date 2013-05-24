@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include "OSCAR.h"
-#include "arsenal.h"
 
 OSCAR::OSCAR(ParameterReader *paraRdr_in, char _filename[])
 {

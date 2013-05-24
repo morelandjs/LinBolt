@@ -2,6 +2,7 @@
 #define OSCAR_H
 
 #include "system.h"
+#include "arsenal.h"
 #include "ParameterReader.h"
 #include "cell.h"
 #include <vector>
