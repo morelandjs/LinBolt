@@ -81,8 +81,12 @@ int main(int argc, char *argv[])
     }*/
   //=======================================================
   scattering* dynamics = new scattering(&paraRdr);
-  dynamics->printGamma("Gamma_gg2gg.dat");
-
+  //dynamics->printGamma("Gamma_gg2gg.dat");
+  for(int i=0; i<1000; i++){
+    cout << dynamics->sampleDiffXS(5.0,0.4,0,0,0,0)/(2.0*M_PI)*360.0 << ", ";
+    //cout << endl;
+    //cout << endl;
+  }
   // Delete the hydro array
   delete oscar;
   delete dynamics;
