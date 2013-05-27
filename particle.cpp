@@ -7,15 +7,14 @@
 
 particle::particle(ParameterReader* _paraRdr, pdata* _pdata)
 {
-  if(_pdata->coord.size() == 0) _pdata->coord = position2coord(_pdata->position);
-  if(_pdata->position.size() == 0) _pdata->position = coord2position(_pdata->coord);
+  if(_pdata->coord.size() == 0 && _pdata->position.size() != 0) _pdata->coord = position2coord(_pdata->position);
+  if(_pdata->position.size() == 0 && _pdata->coord.size() != 0) _pdata->position = coord2position(_pdata->coord);
   paraRdr = _paraRdr;
   hquark = _pdata;
 }
 
 particle::~particle()
 {
-  delete hquark;
 }
 
 void particle::stream(double dtau)

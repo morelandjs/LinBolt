@@ -282,27 +282,15 @@ vector<double> OSCAR::sample_boltzmann(double mass, double temp)
   double pmag,E,ctheta,stheta,phi,pgauss,K,f;
 
   if(temp/mass>0.6){
-    cout << 1 << endl;
     do{
-      cout << 2 << endl;
       r1=drand48();
       r2=drand48();
       r3=drand48();
       a=-log(r1); b=-log(r2); c=-log(r3);
-      cout << "a: " << a << endl;
-      cout << "b: " << b << endl;
-      cout << "c: " << c << endl;
       pmag=temp*(a+b+c);
-      cout << "pmag: " << pmag << endl;
-      cout << "mass: " << mass << endl;
-      cout << pow(pmag*pmag+mass*mass,0.5) << endl;
       p[0]=pow(pmag*pmag+mass*mass,0.5);
-      cout << "p0: " << p[0] << endl;
-      cout << "temp: " << temp << endl;
       f = 1/(exp((p[0]-pmag)/temp)+1);
-      cout << "f: " << f << endl;
     } while(drand48()>f);
-    cout << 3 << endl;
     ctheta=(a-b)/(a+b);
     stheta=sqrt(1.0-ctheta*ctheta);
     phi=temp*temp*pow(a+b,2)/(pmag*pmag);
@@ -312,56 +300,38 @@ vector<double> OSCAR::sample_boltzmann(double mass, double temp)
     p[3]=pmag*ctheta; 
   }
   else{
-    cout << 4 << endl;
     do{
-      cout << 5 << endl;
       r0=drand48();
       I1=mass*mass;
       I2=2.0*mass*temp;
       I3=2.0*temp*temp;
       Itot=I1+I2+I3;
       if(r0<I1/Itot){
-	cout << 6 << endl;
 	r1=drand48();
 	K=-temp*log(r1);
       }
       else if(r0<(I1+I2)/Itot){
-	cout << 7 << endl;
 	r1=drand48();
 	r2=drand48();
 	K=-temp*log(r1*r2);
       }
       else{
-	cout << 8 << endl;
 	r1=drand48();
 	r2=drand48();
 	r3=drand48();
 	K=-temp*log(r1*r2*r3);
       }
-      cout << 9 << endl;
       E=K+mass;
       pmag=sqrt(E*E-mass*mass);
       r0=drand48();
     } while(r0>pmag/E);
-    cout << 10 << endl;
     phi=2.0*M_PI*drand48();
-    cout << "phi: " << phi << endl;
     ctheta=1.0-2.0*drand48();
-    cout << "ctheta: " << ctheta << endl;
     stheta=sqrt(1.0-ctheta*ctheta);
-    cout << "stheta: " << stheta << endl;
-    cout << "E: " << E << endl;
-    cout << "pmag: " << pmag << endl;
     p[0]=E;
     p[1]=pmag*stheta*cos(phi);
     p[2]=pmag*stheta*sin(phi);
     p[3]=pmag*ctheta;
-
-    cout << E << endl;
-    cout << pmag << " " << stheta << " " << cos(phi) << endl;
-    cout << pmag*stheta*cos(phi) << endl;
-    cout << pmag*stheta*sin(phi) << endl;
-    cout << pmag*ctheta << endl;
   }
   return p;
 }

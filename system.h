@@ -20,9 +20,13 @@ class system
   void setDim(vector<int> _dim){dim = _dim;}
   void setGridMin(vector<double> _gridmin){gridmin = _gridmin;}
   void setGridMax(vector<double> _gridmax){gridmax = _gridmax;}
-  vector<double> coord2position(vector<int> &_coord);
   vector<int> position2coord(vector<double> &_position);
+  vector<double> coord2position(vector<int> &_coord);
+  double getPsi(vector<double> &_fourvector);
+  double getPhi(vector<double> &_fourvector);
+  vector<double> rotate(vector<double> &_fourvector, double theta, double phi);
   vector<double> lorentzboost(vector<double> &_fourvector, vector<double> &_boost);
+  vector<double> getUcms(vector<double> &p1, vector<double> &p2);
   template<class type>
     type fourproduct(vector<type> v1, vector<type> v2){
     double product=0.0;

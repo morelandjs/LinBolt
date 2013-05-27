@@ -6,7 +6,7 @@ using std::vector;
 
 struct pdata
 {
-  vector<int> particle_id;
+  int particle_id;
   vector<int> coord;
   vector<double> position;
   vector<double> velocity;

@@ -30,6 +30,34 @@ vector<int> system::position2coord(vector<double> &_four_position)
   return coordinates;
 }
 
+double system::getPsi(vector<double> &_fourvector)
+{
+  vector<double> fourvector = _fourvector;
+  double x = fourvector[1], y = fourvector[2], z = fourvector[3];
+  double r = pow(x*x+y*y+z*z,0.5);
+  double psi = acos(z/r);
+  return psi;
+}
+
+double system::getPhi(vector<double> &_fourvector)
+{
+  vector<double> fourvector = _fourvector;
+  double x = fourvector[1], y = fourvector[2];
+  double phi = atan(y/x);
+  return phi;
+}
+
+vector<double> system::rotate(vector<double> &_fourvector, double psi, double phi)
+{
+  vector<double> vec=_fourvector;
+  vector<double> rvec(4,0.0);
+  rvec[0] = 1.0*vec[0];
+  rvec[1] = cos(psi)*cos(phi)*vec[1]+cos(psi)*sin(phi)*vec[2]-sin(psi)*vec[3];
+  rvec[2] = -sin(phi)*vec[1]+cos(phi)*vec[2];
+  rvec[3] = sin(psi)*cos(phi)*vec[1]+sin(psi)*sin(phi)*vec[2]+cos(psi)*vec[3];
+  return rvec;
+}
+
 vector<double> system::lorentzboost(vector<double> &_fourvector, vector<double> &_boost)
 {
   vector<double> u = _fourvector;
@@ -61,4 +89,24 @@ vector<double> system::lorentzboost(vector<double> &_fourvector, vector<double> 
   uprime.push_back(-gamma*beta_z*u[0]+((gamma-1)*beta_zx)*u[1]+((gamma-1)*beta_zy)*u[2]+(1+(gamma-1)*beta_zz)*u[3]);
   
   return uprime;
+}
+
+vector<double> system::getUcms(vector<double> &p1, vector<double> &p2)
+{
+  double beta_x, beta_y, beta_z, beta, gamma;
+  vector<double> u_cms(4,0.0);
+
+  beta_x = (p1[1]+p2[1])/(p1[0]+p2[0]);
+  beta_y = (p1[2]+p2[2])/(p1[0]+p2[0]);
+  beta_z = (p1[3]+p2[3])/(p1[0]+p2[0]);
+
+  beta = pow(beta_x*beta_x+beta_y*beta_y+beta_z*beta_z,0.5);
+  gamma = 1/pow(1-beta*beta,0.5);
+
+  u_cms[0] = gamma;
+  u_cms[1] = gamma*beta_x;
+  u_cms[2] = gamma*beta_y;
+  u_cms[3] = gamma*beta_z;
+
+  return u_cms;
 }

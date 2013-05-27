@@ -18,12 +18,12 @@ class particle : public system
   pdata* hquark;
   particle(ParameterReader* _paraRdr, pdata* _pdata);
   ~particle();
-  vector<int> get_particle_id() {return hquark->particle_id;}
+  int get_particle_id() {return hquark->particle_id;}
   vector<int> get_coord() {return hquark->coord;}
   vector<double> get_position() {return hquark->position;}
   vector<double> get_velocity() {return hquark->velocity;}
   vector<double> get_momentum() {return hquark->momentum;}
-  void set_particle_id(vector<int> _particle_id) {hquark->particle_id=_particle_id;}
+  void set_particle_id(int _particle_id) {hquark->particle_id=_particle_id;}
   void set_coord(vector<int> _coord) {hquark->coord=_coord;}
   void set_position(vector<double> _position) {hquark->position=_position;}
   void set_velocity(vector<double> _velocity) {hquark->velocity=_velocity;}
