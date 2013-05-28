@@ -15,6 +15,14 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+  pdata p1_data, p2_data, p3_data, p4_data;
+  vector<int> p1_coord, ij2kl;
+  vector<double> fc_vel, p1_lab, p1_cell, p2_cell, u_cms, p1_cms, p2_cms;
+  vector<double> p3_cms, p4_cms, u_cms_inv, p3_lab, p4_lab;
+  double mass, temp, s, theta13, phi13, E3, E4;
+  int ifc;
+  cell* fc;
+
   // vector<int> loc;
   int ithermal=0;
   char path[100];
@@ -32,90 +40,111 @@ int main(int argc, char *argv[])
   // Initialize the scattering dynamics class
   scattering* dynamics = new scattering(&paraRdr);
 
-  // Create a hard probe (hp)
-  pdata hp_data;
-  hp_data.particle_id = 1;
-  hp_data.position += 0.6, 0.0, 0.0, 0.0;
-  hp_data.velocity += 2.29416, 2.06474, 0.0, 0.0;
-  hp_data.momentum += 0.688248, 0.619423, 0.0, 0.0;
-  particle* hp = new particle(&paraRdr, &hp_data);
+  // Create a hard probe (p1)
+  p1_data;
+  p1_data.particle_id = 1;
+  p1_data.position += 0.6, 0.0, 0.0, 0.0;
+  p1_data.velocity += 2.29416, 2.06474, 0.0, 0.0;
+  p1_data.momentum += 0.688248, 0.619423, 0.0, 0.0;
+  particle* p1 = new particle(&paraRdr, &p1_data);
 
   // Time loop
   //========================================================
-   for(int imin=0; imin<300; imin+=100){
-    oscar->populateOSCAR(&paraRdr,imin,imin+100);
+   for(int imin=0; imin<300; imin+=20){
+    oscar->populateOSCAR(&paraRdr,imin,imin+20);
     cell_array = oscar->getHydro();
-    for(int itime=imin; itime<(imin+100); itime+=1){
+    for(int itime=imin; itime<(imin+20); itime+=1){
 
-      // get hard probe (hp) coordinates and fluid cell (fc) container
-      vector<int> hp_coord = hp->get_coord();
-      int ifc = oscar->grabCellfromCoord(hp_coord); 
-      cell* fc = (*cell_array)[ifc]; 
-      cout << "coord: " << vector2string(hp_coord) << endl;
+      //###############################################################
+      //############## Execute 2->2 Scattering Event ##################
 
-      // boost hard probe (hp) to the rest frame of the fluid cell (fc)
-      vector<double> fc_vel = fc->velocity;
-      cout << "fc_vel: " << vector2string(fc_vel) << endl;
-      vector<double> p1_lab = hp->get_momentum();
-      cout << "p1_lab: " << vector2string(p1_lab) << endl;
-      vector<double> p1_cell = hp->lorentzboost(p1_lab,fc_vel);
-      cout << "p1_cell: " << vector2string(p1_cell) << endl;
-      hp->set_momentum(p1_cell);
+      // get hard probe (p1) coordinates and fluid cell (fc) container
+      //==============================================================
+      p1_coord = p1->get_coord();
+      ifc = oscar->grabCellfromCoord(p1_coord); 
+      fc = (*cell_array)[ifc]; 
+      
+      // boost hard probe (p1) to the rest frame of the fluid cell (fc)
+      //==============================================================
+      fc_vel = fc->velocity;
+      p1_lab = p1->get_momentum();
+      p1_cell = p1->lorentzboost(p1_lab,fc_vel);
+      p1->set_momentum(p1_cell);
 
-      // sample a thermal quark in the fluid cell (fc) rest frame
-      double mass = 0.2, temp = fc->thermal[2];
+      // sample a thermal quark (p2) in the fluid cell (fc) rest frame
+      //=============================================================
       //vector<double> p2_cell = oscar->sample_boltzmann(mass, temp);
-      vector<double> p2_cell;
+      mass = 0.2;
+      temp = fc->thermal[2];
       p2_cell += 0.688248, -0.619423, 0.0, 0.0;
-      cout << "p2_cell: " << vector2string(p2_cell) << endl;
-
-      pdata tq_data;
-      tq_data.particle_id = 1;
-      hp_data.coord = hp_coord;
-      tq_data.momentum = p2_cell;
-      particle* tq = new particle(&paraRdr, &tq_data);
-
-      // find the cms velocity of the collision pair
-      vector<double> u_cms = oscar->getUcms(p1_cell, p2_cell);
-      cout << "u_cms: " << vector2string(u_cms) << endl;
+      p2_data.particle_id = 1;
+      p2_data.coord = p1_coord;
+      p2_data.momentum = p2_cell;
+      particle* p2 = new particle(&paraRdr, &p2_data); 
 
       // boost p1 and p2 to their cms frame
-      vector<double> p1_cms = hp->lorentzboost(p1_cell, u_cms);
-      cout << "p1_cms: " << vector2string(p1_cms) << endl;
-      vector<double> p2_cms = tq->lorentzboost(p2_cell, u_cms);
-      cout << "p2_cms: " << vector2string(p2_cms) << endl;
-      hp->set_momentum(p1_cms);
-      tq->set_momentum(p2_cms);
-     
-      // rotate p1 and p2 such that p1 lies along the z-axis
-      double psi1 = hp->getPsi(p1_cms);
-      double phi1 = hp->getPhi(p1_cms);
-      vector<double> p1_cms_rot = hp->rotate(p1_cms,psi1,phi1);
-      cout << "p1_cms_rot: " << vector2string(p1_cms_rot) << endl;
-      vector<double> p2_cms_rot = tq->rotate(p2_cms,psi1,phi1);
-      cout << "p2_cms_rot: " << vector2string(p2_cms_rot) << endl;
-      hp->set_momentum(p1_cms_rot);
-      tq->set_momentum(p2_cms_rot);
+      //============================================================
+      u_cms = oscar->getUcms(p1_cell, p2_cell);
+      p1_cms = p1->lorentzboost(p1_cell, u_cms);
+      p2_cms = p2->lorentzboost(p2_cell, u_cms);
+      p1->set_momentum(p1_cms);
+      p2->set_momentum(p2_cms);
 
-      // scatter p1 and p2, returning deflected theta and phi
-      double s = dynamics->getMandelstamS(p1_cms_rot, p2_cms_rot);
-      vector<int> ij2kl = dynamics->sample2to2(s,temp,1);
-      double theta13 = dynamics->sampleTheta(s,temp,ij2kl);
-      cout << "theta13: " << theta13 << endl;
-      double phi13 = dynamics->samplePhi();
-      cout << "phi13: " << phi13 << endl;
+      // scatter p1 and p2, returning deflected theta13 and phi13
+      //===========================================================
+      s = dynamics->getMandelstamS(p1_cms, p2_cms);
+      ij2kl = dynamics->sample2to2(s,temp,1);
+      theta13 = dynamics->sampleTheta(s,temp,ij2kl);
+      phi13 = dynamics->samplePhi();
 
-      // invert rotation
-      //vector<double> p3_cms = hp->rotate(p1_cms,psi1,phi1);
+      // create deflected particles p3 and p4
+      //==========================================================
+      p3_data.particle_id = ij2kl[2]; 
+      p4_data.particle_id = ij2kl[3];
+      p3_data.coord = p1->get_coord();
+      p4_data.coord = p1->get_coord();
+      particle* p3 = new particle(&paraRdr, &p3_data);
+      particle* p4 = new particle(&paraRdr, &p4_data);
+      p3_cms = p1->rotate(p1_cms, M_PI-theta13, phi13);
+      p4_cms = p2->rotate(p2_cms, theta13-M_PI, phi13);
+      p3->set_momentum(p3_cms);
+      p4->set_momentum(p4_cms);
 
-      // increment quark evolution
-      //hp->printPosition("data/quark_position_0.dat");
-      //hp->stream(0.02);
+      // restore p3 and p4 to the lab frame
+      //=========================================================
+      u_cms_inv = p3->reflectfourvector(u_cms);
+      p3_lab = p3->lorentzboost(p3_cms, u_cms_inv);
+      p4_lab = p4->lorentzboost(p4_cms, u_cms_inv);
+      p3->set_momentum(p3_lab);
+      p4->set_momentum(p4_lab);
+
+      // follow the outgoing particle with the leading energy
+      //========================================================
+      E3 = p3_lab[0];
+      E4 = p4_lab[0];
+      if(E3>E4) p1 = p3;
+      else if(E4>E3) p1 = p4;
+      else if(drand48()>0.5) p1 = p3;
+      else p1 = p4;
+
+      delete p2; 
+      delete p3; 
+      delete p4;
+
+      // free stream leading partons until next scattering event
+      //=========================================================
+      p1->printPosition("data/quark_position_0.dat");
+      p1->stream(0.02);
+
+      cout << "p1 position: " << vector2string(p1->get_position()) << endl;
+      cout << "p1 momentum: " << vector2string(p1->get_momentum()) << endl;
+      cout << endl;
+      cout << endl;
 
       // increment hydro evolution
+      //=========================================================
       //oscar->populate2D(itime,ithermal); 
       //oscar->print2D(path);  
-      delete tq;
     }
     }
    //===============================================

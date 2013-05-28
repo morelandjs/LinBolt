@@ -27,9 +27,6 @@ vector<int> scattering::sample2to2(double s, double temp, int i)
   double channel_rate=0.0, total_rate = Gamma_i(s,temp,i);
   double rand = drand48();
 
-  cout << "total rate: " << total_rate << endl;
-  cout << "rand: " << rand << endl;
-
   int index = 0;
   for(int j=-3; j<=3; j++){
     for(int k=-3; k<=3; k++){
@@ -39,7 +36,6 @@ vector<int> scattering::sample2to2(double s, double temp, int i)
 	prob = channel_rate/total_rate;
 	if(channel_rate > 0){
 	  total_prob += prob;
-	  cout << "total probability: " << total_prob << "  " << vector2string(ij2kl) << endl;
 	  partition += prob;
 	  partitions.push_back(partition);
 	  if(partitions[index] < rand && rand < partitions[index+1]){

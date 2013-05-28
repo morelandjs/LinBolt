@@ -27,8 +27,17 @@ class system
   vector<double> rotate(vector<double> &_fourvector, double theta, double phi);
   vector<double> lorentzboost(vector<double> &_fourvector, vector<double> &_boost);
   vector<double> getUcms(vector<double> &p1, vector<double> &p2);
+
   template<class type>
-    type fourproduct(vector<type> v1, vector<type> v2){
+    vector<type> reflectfourvector(vector<type> &v){
+    vector<type> rv(4,0.0);
+    rv[0] = v[0];
+    for(int i=1; i<4; i++){rv[i] = -1.0*v[i];}
+    return rv;
+  }
+
+  template<class type>
+    type fourproduct(vector<type> &v1, vector<type> &v2){
     double product=0.0;
     product += v1[0]*v2[0];
     for(int i=1; i<4; i++){product -= v1[i]*v2[i];}

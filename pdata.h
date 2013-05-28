@@ -2,6 +2,7 @@
 #define PDATA_h
 
 #include <vector>
+#include <map>
 using std::vector;
 
 struct pdata
@@ -12,5 +13,5 @@ struct pdata
   vector<double> velocity;
   vector<double> momentum;
 };
-  
+
 #endif
