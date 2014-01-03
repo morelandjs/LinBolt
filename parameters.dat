@@ -1,0 +1,123 @@
+# Select OSCAR data to read into memory. Make sure all selected parameters exist in the relevant OSCAR file. Irrelevant
+# parameters may be omitted. The number of selected parameters controls the dimensionality of the resulting hydro array.
+# See the OSCAR TECHQM page for details, https://wiki.bnl.gov/TECHQM/index.php/OSCAR_Standard_Output_Format_for_Hydro_Codes .
+
+# Formatting,
+# Eulerian: it ix [iy iz] e p T R_qgp vx [vy y_L] [n(1)...n(C)] [mu(1)...mu(C)] [Diss(1)...Diss(D)]  [Tr(1)...Tr(T)]
+# Lagrangian: it ix [iy iz]  tau x [y eta] e p T R_qgp vx [vy y_L] [n(1)...n(C)] [mu(1)...mu(C)] [Diss(1)...Diss(D)] [Tr(1)...Tr(T)]
+
+# Parameters
+####################################################################################################################################
+####################################################################################################################################
+
+# set output level
+#################################################################
+verbose = 0             # Enable to see detailed scattering output
+gluon = 0		# enable gluons
+quark = 0		# enable quarks
+hquark = 1		# enable heavy quarks
+
+# Scattering parameters
+##################################################################
+alphas = 0.3	        # Strong coupling constant
+charm_mass = 1.35	# Charm mass in GeV
+gluon_dof = 16		# Gluon degrees of freedom
+quark_dof = 6           # Quark degrees of freedom
+
+# Scattering rate table parameters
+##################################################################
+nE1 = 500;
+E1_min = 1.35;
+E1_max = 20.0;
+
+nE2 = 500;
+E2_min = 0.01
+E2_max= 2.8
+
+nT = 1;
+T_min = 0.370;
+T_max = 0.370;
+
+ns = 200;
+
+# Grid Parameters
+##################################################################
+grid_nt = 1000   	# Number of time steps
+grid_t0 = 0.0           # Starting time
+grid_t1 = 40.0		# Stopping time
+
+grid_nx = 3		# Number of x steps
+grid_x0 = -1.0		# Minimum x value
+grid_x1 = 1.0		# Maximum x value
+
+grid_ny = 3		# Number of y steps  (set to 1 if invariant in y)
+grid_y0 = -1.0		# Minimum y value
+grid_y1 = 1.0		# Maximum y value
+
+grid_nz = 3		# Number of z steps (set to 1 if invariant in z)
+grid_z0 = -1.0		# Minimum z value
+grid_z1 = 1.0		# Maximum z value
+
+# Medium Parameters
+##################################################################
+medium_type = 1		# 0 = hydro and 1 = box
+dim_CC = 0		# Number of non-vanishing conserved charges
+dim_DD = 8		# Number of dissipative components
+dim_TT = 3		# Number of transport parameters
+             
+parse_it = 1     	# The time-step index; the physical time is t0+it*(t1-t0)/Nt. Again, be careful what geometry has been specified! 
+toggle_it = 1		# In case of scaling expansion it refers to longit. proper time tau! 
+
+parse_ix = 1     	# Cell-index in x-(or r- or rt-) direction, physical value is x0+ix*(x1-x0)/Nx.
+toggle_ix = 1
+
+parse_iy = 1     	# As above but in y-direction. Can be absent in case of symmetry restricted solution, 
+toggle_iy = 1       	# e.g. for "sphere", "slab1d"...
+
+parse_iz = 0     	# As above but in the z-direction. Can be absent.
+toggle_iz = 0
+
+parse_tau = 0 		# Eigen-time of cell  [only needed for Lagrangian grids]
+toggle_tau = 0
+
+parse_x = 0  		# Lower x-boundary of cell [only needed for Lagrangian grids]
+toggle_x = 0		
+
+parse_y = 0   		# Lower y-boundary of cell [only needed for Lagrangian grids]
+toggle_y = 0
+
+parse_eta = 0 		# Lower eta-boundary of cell (eta = space-time rapidity) [only needed for Lagrangian grids]
+toggle_eta = 0
+
+parse_e = 1		# Energy density in the local rest frame; in units of GeV/fm^3
+toggle_e = 1
+
+parse_p = 1		# Pressure in units of GeV/fm^3
+toggle_p = 1
+
+parse_T = 1		# Temperature in units of GeV.
+toggle_T = 1
+
+parse_R_qgp = 1 	# The fraction of QGP liquid in the cell
+toggle_R_qgp = 1
+
+parse_vx = 1		# Fluid velocity in x- (or r- or rt-) direction
+toggle_vx = 1
+
+parse_vy = 1		# y- (or phi-) direction. Can be absent in case of symmetry restricted solution, e.g. for "sphere",  "slab1d"...
+toggle_vy = 1
+
+parse_y_L = 1		# Longitudinal fluid rapidity; Can be absent. Note that the fluid 4-velocity can be calculated from the output as: 
+toggle_y_L = 1          # u^\mu = \gamma_\perp (\cosh(y_L), vx, vy, \sinh(y_L)) with \gamma_\perp = 1/sqrt(1-vx^2-vy^2)
+
+parse_n = 0		# Density of i'th charge in the local rest frame; in units of 1/fm^3. Can be absent if no nonvanishing
+toggle_n = 0		# Conserved currents where considered.
+
+parse_mu = 0		# Chemical potential corresponding to the i'th conserved charge; in units of GeV. 
+toggle_mu = 0           # Can be absent if no nonvanishing conserved currents where considered.
+
+parse_Diss = 0 		# Dissipative components of shear pressure tensor: e.g. \pi^xx, \pi^yy, \pi^xy, and \pi^\eta\eta in 2D case
+toggle_Diss = 0
+
+parse_Tr = 0	   	# Transport coefficients: e.g \eta/s and \tau_\pi, \tau_\Pi (the latter for the bulk pressure)
+toggle_Tr = 0
