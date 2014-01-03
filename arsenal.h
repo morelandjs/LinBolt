@@ -92,6 +92,11 @@ string vector2string(vector<type> vec){
   string str = sin.str(); 
   return str;
 }
+
+void drawProgressBar(int len, double percent);
+
+double PolyLog(double n, double z);
+
 #endif
 
 /*----------------------------------------------------------------------

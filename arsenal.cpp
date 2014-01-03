@@ -1162,3 +1162,32 @@ void get_bin_average_and_count(istream& is, ostream& os, vector<double>* bins, l
   }
 
 }
+
+//************************************************************************************
+void drawProgressBar(int len, double percent)
+{
+  cout << "\x1B[2K"; // Erase the entire current line.
+  cout << "\x1B[0E"; // Move to the beginning of the current line.
+  string progress;
+  for (int i = 0; i < len; ++i) {
+    if (i < static_cast<int>(len*percent+0.5)) {
+      progress += "=";
+    } else {
+      progress += " ";
+    }
+  }
+  cout << "[" << progress << "] " << (static_cast<int>(100*percent+0.5)) << "%";
+  flush(cout); // Required.
+}
+
+//***********************************************************************************
+double PolyLog(double s, double z){
+  double dy=1.0, y=0.0;
+  int k = 1;
+  do{
+    dy = pow(z,k)/pow(k,s); 
+    y += dy;
+    k++;
+  }while(dy/y > 0.01);
+  return y;
+}

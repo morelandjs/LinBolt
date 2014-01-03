@@ -10,22 +10,24 @@ using std::vector;
 class system
 {
  protected:
-  static vector<int> dim; 
+  static vector<int> steps; 
   static vector<double> gridmin; 
   static vector<double> gridmax;
  public:
-  static vector<int> getDim(){return dim;}
+  static vector<int> getSteps(){return steps;}
   static vector<double> getGridMin(){return gridmin;}
   static vector<double> getGridMax(){return gridmax;}
-  void setDim(vector<int> _dim){dim = _dim;}
+  void setSteps(vector<int> _steps){steps = _steps;}
   void setGridMin(vector<double> _gridmin){gridmin = _gridmin;}
   void setGridMax(vector<double> _gridmax){gridmax = _gridmax;}
-  vector<int> position2coord(vector<double> &_position);
-  vector<double> coord2position(vector<int> &_coord);
-  double getPsi(vector<double> &_fourvector);
-  double getPhi(vector<double> &_fourvector);
-  vector<double> rotate(vector<double> &_fourvector, double theta, double phi);
-  vector<double> lorentzboost(vector<double> &_fourvector, vector<double> &_boost);
+  vector<double> coord2position(vector<int> &coord);
+  vector<int> position2coord(vector<double> &position);
+
+  double getTheta(vector<double> &v);
+  double getPhi(vector<double> &v);
+  vector<double> rotate(vector<double> &v, double theta, double phi);
+  vector<double> inv_rotate(vector<double> &v, double theta, double phi);
+  vector<double> lorentzboost(vector<double> &u, vector<double> &v);
   vector<double> getUcms(vector<double> &p1, vector<double> &p2);
 
   template<class type>

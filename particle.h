@@ -3,8 +3,8 @@
 
 #include "system.h"
 #include "arsenal.h"
+#include "medium.h"
 #include "ParameterReader.h"
-#include "pdata.h"
 #include <vector>
 #include <map>
 using std::vector;
@@ -13,31 +13,58 @@ using namespace std;
 
 class particle : public system
 {
+
  private:
   ParameterReader* paraRdr;
-  double alphas, gs;
-  map<int,double> masstable;
-  
- public:
-  
-  pdata* pd;
 
-  particle(ParameterReader* _paraRdr, pdata* _pdata);
+  map<int,double> masstable;
+  double alphas, gs, pathlength, Qperp;
+
+  int id;
+  vector<int> coord;
+  vector<double> position;
+  vector<double> velocity;
+  vector<double> momentum;
+  vector<double> fluid_velocity;
+  vector<double> fluid_thermal;
+
+ public:
+  // constructor/de-constructor
+  particle(ParameterReader* _paraRdr);
   ~particle();
-  void syncdata();
-  vector<double> velocity2momentum(vector<double> &velocity);
-  vector<double> momentum2velocity(vector<double> &momentum);
-  int get_particle_id() {return pd->particle_id;}
-  vector<int> get_coord() {return pd->coord;}
-  vector<double> get_position() {return pd->position;}
-  vector<double> get_velocity() {return pd->velocity;}
-  vector<double> get_momentum() {return pd->momentum;}
-  void set_particle_id(int _particle_id) {pd->particle_id=_particle_id;}
-  void set_coord(vector<int> _coord) {pd->coord=_coord;}
-  void set_position(vector<double> _position) {pd->position=_position;}
-  void set_velocity(vector<double> _velocity) {pd->velocity=_velocity;}
-  void set_momentum(vector<double> _momentum) {pd->momentum=_momentum;}
+
+  // get functions
+  int getID(){return id;}
+  vector<int> getCoord(){return coord;}
+  vector<double> getPosition(){return position;}
+  vector<double> getVelocity(){return velocity;}
+  vector<double> getMomentum(){return momentum;}
+  vector<double> getFluidVelocity(){return fluid_velocity;}
+  vector<double> getFluidThermal(){return fluid_thermal;}
+  double getMass(){return masstable[id];}
+  double getPathLength(){return pathlength;}
+  double getQperp(){return Qperp;}
+
+  // set functions
+  void setID(int _id){id = _id;}
+  void setCoord(vector<int>& _coord){
+    coord = _coord;
+    position = coord2position(_coord);
+  }
+  void setPosition(vector<double>& _position){
+    position = _position;
+    coord = position2coord(_position);
+  }
+  void setVelocity(vector<double>& _velocity);
+  void setMomentum(vector<double>& _momentum);
+  void setPathLength(double _pathlength){pathlength = _pathlength;}
+  void addPathLength(double ds){pathlength += ds;}
+  void setQperp(double _Qperp){Qperp = _Qperp;}
+  void addQperp(double dQperp){Qperp += dQperp;}
+
+  // other functions
   void stream(double dt);
+  void getFluidCellData(medium* oscar, vector<cell*>* cell_array);
   void printPosition(char filename[]);
 };
 

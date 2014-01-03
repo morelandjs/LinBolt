@@ -5,107 +5,107 @@
 #include <iomanip>
 #include "particle.h"
 
-particle::particle(ParameterReader* _paraRdr, pdata* _pdata)
+particle::particle(ParameterReader* _paraRdr)
 {
   paraRdr = _paraRdr;
-  pd = _pdata;
+
   // particle mass table
-  masstable[-2] = 0.0048; // dbar
-  masstable[-1] = 0.0024; // ubar
-  masstable[0] = 0.0;     // g
-  masstable[1] = 0.0024;  // u
-  masstable[2] = 0.0048;  // d 
-  syncdata();
+  masstable[-4] = paraRdr->getVal("charm_mass"); // cbar
+  masstable[-3] = 0.0; // sbar
+  masstable[-2] = 0.0; // dbar
+  masstable[-1] = 0.0; // ubar
+  masstable[0] = 0.0;  // g
+  masstable[1] = 0.0;  // u
+  masstable[2] = 0.0;  // d 
+  masstable[3] = 0.0;  // s
+  masstable[4] = paraRdr->getVal("charm_mass"); // c
 }
 
 particle::~particle()
 {
 }
 
-void particle::syncdata()
+void particle::setVelocity(vector<double>& _velocity)
 {
-  int cs = pd->coord.size();
-  int xs = pd->position.size();
-  int vs = pd->velocity.size();
-  int ps = pd->momentum.size();
-  if(cs == 0 && xs != 0) set_coord(position2coord(pd->position));
-  if(xs == 0 && cs != 0) set_position(coord2position(pd->coord));
-  if(vs == 0 && ps != 0) set_velocity(momentum2velocity(pd->momentum));
-  if(ps == 0 && vs != 0) set_momentum(velocity2momentum(pd->velocity));
-}
+  // set velocity
+  velocity = _velocity;
 
-vector<double> particle::velocity2momentum(vector<double> &velocity)
-{
-  double mass = masstable[pd->particle_id];
-  vector<double> momentum;
-  int vs = velocity.size();
-  
+  // set momentum (if possible)
+  vector<double> _momentum(4,0.0);
+  double mass = masstable[id];
   if(mass==0.0){
-    // do nothing (massless four-velocity is undefined)
+    // do nothing (four-momentum cannot be determined from velocity)
   }
   else if(mass>0.0){
-    for(int i=0; i<vs; i++){
-      momentum.push_back(velocity[i]*mass);
+    for(int i=0; i<4; i++){
+      _momentum[i] = (_velocity[i]*mass);
     }
   }
   else{
     cout << "error: negative mass" << endl;
   }
-  return momentum; 
+  momentum = _momentum;
 }
 
-vector<double> particle::momentum2velocity(vector<double> &momentum)
+void particle::setMomentum(vector<double>& _momentum)
 {
-  double mass = masstable[pd->particle_id];
-  vector<double> velocity;
-  int ps = momentum.size();
+  // set momentum
+  momentum = _momentum;
+  double pmagsq=0.0, pmag=0.0;
+  for(int i=1; i<4; i++){
+    pmagsq += momentum[i]*momentum[i];
+  }
+  pmag = pow(pmagsq,0.5);
 
+  // set velocity (if possible)
+  vector<double> _velocity(4,0.0);
+  double mass = masstable[id];
   if(mass==0.0){
-    // do nothing (massless four-velocity is undefined)
+    _velocity[0] = 1.0; // computational trick 
+    for(int i=1; i<4; i++){
+      _velocity[i] = momentum[i]/pmag;
+    }
   }
   else if(mass>0.0){
-    for(int i=0; i<ps; i++){
-      velocity.push_back(momentum[i]/mass);
+    for(int i=0; i<4; i++){
+      _velocity[i] = (_momentum[i]/mass);
     }
   }
   else{
     cout << "error: negative mass" << endl;
   }
-  return velocity; 
+  velocity = _velocity;
 }
 
 void particle::stream(double dtau)
 {
-  syncdata();
-  double mass = masstable[pd->particle_id];
+  double mass = masstable[id];
+  vector<double> new_position(4,0.0);
+  double gamma = velocity[0];
+  double dt = dtau/gamma;
 
-  if(mass==0.0){
-    for(int i=0; i<pd->position.size(); i++){
-      pd->position[i] += dtau;
-    }
+  for(int i=0; i<4; i++){
+    new_position[i] = (position[i] + velocity[i]*clight*dt);
   }
-  else if(mass>0.0){
-    double gamma = pd->velocity[0];
-    double dt = dtau/gamma;
-    for(int i=0; i<pd->position.size(); i++){
-      pd->position[i] += pd->velocity[i]*clight*dt;
-    }
-  }
-  else{
-    cout << "error: negative mass" << endl;
-  }
+  setPosition(new_position);
+}
 
-  syncdata();
+void particle::getFluidCellData(medium* oscar, vector<cell*>* cell_array)
+{
+   vector<int> coord = getCoord();
+   int ifc = oscar->grabCellfromCoord(coord);
+   cell* fc = (*cell_array)[ifc];
+   fluid_velocity = fc->velocity;
+   fluid_thermal = fc->thermal;
 }
 
 void particle::printPosition(char filename[])
 {
   ofstream outfile;
   outfile.open(filename, std::ios_base::app);
-
-  double xx = get_position()[1];
-  double yy = get_position()[2];
-  outfile << setprecision(12) << setw(22) << xx
-	  << setprecision(12) << setw(22) << yy << endl;
+  for(int i=0; i<4; i++){
+    outfile << setprecision(12) << setw(22) << position[i];
+  }
+  outfile << endl;
   outfile.close();
 }
